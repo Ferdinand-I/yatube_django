@@ -4,6 +4,7 @@ import tempfile
 from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
@@ -62,6 +63,9 @@ class TestPostPages(TestCase):
             user=cls.user,
             author=cls.user_following
         )
+        cls.extra_user = User.objects.create(
+            username='Extra'
+        )
 
     @classmethod
     def tearDownClass(cls):
@@ -74,6 +78,7 @@ class TestPostPages(TestCase):
 
     def test_pages_use_correct_templates(self):
         """Test pages use correct templates."""
+        cache.clear()
         templates_pages_names = {
             'posts/index.html': reverse('posts:index'),
             'posts/group_list.html': reverse(
@@ -101,6 +106,7 @@ class TestPostPages(TestCase):
 
     def test_home_page_show_correct_context(self):
         """Test index page context."""
+        cache.clear()
         context_dict = {
             'title': 'Последние обновления на сайте',
             'description': 'Последние обновления на сайте'
@@ -112,6 +118,7 @@ class TestPostPages(TestCase):
 
     def test_first_page_contains_ten_posts(self):
         """Test paginator on pages where needed with settings page count."""
+        cache.clear()
         pages_with_paginators = {
             'index': reverse('posts:index'),
             'group-list': reverse(
@@ -133,6 +140,7 @@ class TestPostPages(TestCase):
 
     def test_group_posts_correct_context(self):
         """Test group post page has correct context."""
+        cache.clear()
         response = self.authorized_client.get(
             reverse('posts:group-list', kwargs={'slug': self.group.slug})
         )
@@ -142,6 +150,7 @@ class TestPostPages(TestCase):
 
     def test_profile_posts_correct_context(self):
         """Test profile page got correct context."""
+        cache.clear()
         response = self.authorized_client.get(
             reverse('posts:profile', kwargs={'username': 'Test_User'})
         )
@@ -156,6 +165,7 @@ class TestPostPages(TestCase):
 
     def test_post_detail_correct_context(self):
         """Post detail teplate is formed with correct context."""
+        cache.clear()
         response = self.authorized_client.get(
             reverse(
                 'posts:post_detail',
@@ -204,10 +214,16 @@ class TestPostPages(TestCase):
 
     def test_new_post_appears_on_right_pages(self):
         """Test new post appears on top of correct pages."""
+        cache.clear()
+        post_created = Post.objects.create(
+            text='Тестовый текст 1',
+            author=self.user,
+            group=self.group
+        )
         pages = {
             'posts:index': {},
-            'posts:group-list': {'slug': 'test_slug'},
-            'posts:profile': {'username': 'Test_User'}
+            'posts:group-list': {'slug': self.group.slug},
+            'posts:profile': {'username': self.user.username}
         }
         for page, kwargs in pages.items():
             response = self.authorized_client.get(
@@ -218,9 +234,10 @@ class TestPostPages(TestCase):
             )
             post = response.context['page_obj'][0]
             with self.subTest():
-                self.assertEqual(post.text, 'Тестовый текст')
-                self.assertEqual(post.author.username, 'Test_User')
-                self.assertEqual(post.group.title, 'test_group_title')
+                self.assertEqual(post.text, post_created.text)
+                self.assertEqual(post.author.username,
+                                 post_created.author.username)
+                self.assertEqual(post.group.title, post_created.group.title)
 
     def test_new_post_not_appears_in_wrong_group(self):
         """Test new post does not appear in wrong group."""
@@ -235,6 +252,7 @@ class TestPostPages(TestCase):
 
     def test_image_appears_in_context(self):
         """Test that context has an image."""
+        cache.clear()
         pages = (
             reverse('posts:index'),
             reverse(
@@ -264,6 +282,8 @@ class TestPostPages(TestCase):
         self.assertTrue(context.image)
 
     def test_cache_index(self):
+        """Test content is delivered from cache."""
+        cache.clear()
         new_post = Post.objects.create(
             text='delete',
             author=self.user
@@ -284,19 +304,21 @@ class TestPostPages(TestCase):
         self.assertEqual(content, content_del)
 
     def test_follow(self):
+        """Test following exists after request."""
         self.authorized_client.get(
             reverse('posts:profile_follow',
-                    kwargs={'username': self.user.username}
+                    kwargs={'username': self.extra_user.username}
                     )
         )
         self.assertTrue(
             Follow.objects.filter(
                 user=self.user,
-                author=self.user
-            )
+                author=self.extra_user
+            ).exists()
         )
 
     def test_unfollow(self):
+        """Test following does not exisr after request."""
         self.authorized_client.get(
             reverse('posts:profile_unfollow',
                     kwargs={'username': self.user_following.username}
@@ -310,6 +332,7 @@ class TestPostPages(TestCase):
         )
 
     def test_post_appears_in_follow(self):
+        """Test post appears on top of the follow page."""
         response = self.authorized_client.get(
             reverse(
                 'posts:follow_index'
@@ -319,6 +342,7 @@ class TestPostPages(TestCase):
         self.assertEqual(context.text, self.post_following.text)
 
     def test_post_not_appears_in_wrong_follow(self):
+        """Test post does not appear where no need to be."""
         self.authorized_client.force_login(self.user_following)
         response = self.authorized_client.get(
             reverse(

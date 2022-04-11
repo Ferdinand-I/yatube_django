@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.shortcuts import reverse
 from django.test import TestCase, Client
 
@@ -79,6 +80,7 @@ class StaticURLTests(TestCase):
 
     def test_urls_use_correct_template(self):
         """URLs use correct template."""
+        cache.clear()
         templates_url_names = {
             'posts/index.html': reverse('posts:index'),
             'posts/group_list.html': reverse(
