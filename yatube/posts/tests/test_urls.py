@@ -113,5 +113,5 @@ class StaticURLTests(TestCase):
         response = self.guest_client.get(page)
         self.assertRedirects(
             response,
-            reverse('users:login')+f'?next={page}'
+            reverse('users:login') + f'?next={page}'
         )

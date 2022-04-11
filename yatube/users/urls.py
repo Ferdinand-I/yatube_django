@@ -5,7 +5,6 @@ from django.contrib.auth.views import (LoginView, LogoutView,
                                        PasswordResetDoneView,
                                        PasswordResetView,
                                        PasswordResetConfirmView)
-from django.shortcuts import reverse
 from django.urls import path
 from . import views
 
