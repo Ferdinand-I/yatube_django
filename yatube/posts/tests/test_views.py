@@ -266,7 +266,7 @@ class TestPostPages(TestCase):
         )
         for page in pages:
             response = self.authorized_client.get(page)
-            context = response.context['page_obj'][0]
+            context = response.context['page_obj'][1]
             with self.subTest(context=context):
                 self.assertTrue(context.image)
 
