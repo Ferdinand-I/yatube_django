@@ -11,7 +11,6 @@ from django.urls import reverse
 
 from posts.models import Follow, Group, Post
 
-
 User = get_user_model()
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)

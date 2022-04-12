@@ -5,15 +5,11 @@
     {% include 'includes/head.html' %}
   </head>
   <body>
-    <header>
-      {% include 'includes/header.html' %}
-    </header>
+    {% include 'includes/header.html' %}
     <main>
       {% block content %}
       {% endblock %}
     </main>
-    <footer>
-      {% include 'includes/footer.html' %}
-    </footer>>
+    {% include 'includes/footer.html' %}
   </body>
 </html>

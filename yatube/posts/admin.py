@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Follow, Group, Post
+
+from posts.models import Comment, Follow, Group, Post
 
 
 @admin.register(Post)
@@ -36,3 +37,12 @@ class FollowAdmin(admin.ModelAdmin):
         'author'
     )
     list_editable = ('author',)
+
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = (
+        'post',
+        'author',
+        'text'
+    )

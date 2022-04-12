@@ -6,7 +6,7 @@ class AboutAuthorView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         context = {
-            'title': "Об авторе проекта"
+            'title': 'Об авторе проекта'
         }
         return self.render_to_response(context)
 
@@ -16,6 +16,6 @@ class AboutTechView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         context = {
-            'title': "Технологии"
+            'title': 'Технологии'
         }
         return self.render_to_response(context)

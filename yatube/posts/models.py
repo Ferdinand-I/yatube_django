@@ -1,7 +1,6 @@
-from django.db import models
-from django.contrib.auth import get_user_model
-
 from core.models import CreatedModel
+from django.contrib.auth import get_user_model
+from django.db import models
 
 User = get_user_model()
 
@@ -80,7 +79,9 @@ class Comment(CreatedModel):
         verbose_name_plural = 'Комментарии'
 
     def __str__(self):
-        return self.text[:15]
+        if len(self.text) > 15:
+            return self.text[:15] + '...'
+        return self.text
 
 
 class Follow(models.Model):

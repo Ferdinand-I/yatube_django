@@ -1,5 +1,5 @@
-from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import (
@@ -103,7 +103,7 @@ def post_create(request: HttpRequest) -> HttpResponse:
     html-view with a form to create a post.
     """
     if request.user.is_authenticated is not True:
-        return redirect('/auth/login/')
+        return redirect('users:login')
     if request.method != 'POST':
         form = PostForm()
         return render(request, 'posts/create_post.html', {'form': form})
@@ -116,7 +116,7 @@ def post_create(request: HttpRequest) -> HttpResponse:
     post = form.save(False)
     post.author = request.user
     post.save()
-    return redirect(f'/profile/{request.user}/')
+    return redirect('posts:profile', username=request.user.username)
 
 
 def post_edit(request: HttpRequest, post_id: int) -> HttpResponse:
@@ -125,7 +125,7 @@ def post_edit(request: HttpRequest, post_id: int) -> HttpResponse:
     """
     post = get_object_or_404(Post, id=post_id)
     if post.author != request.user:
-        return redirect(f'/posts/{post_id}')
+        return redirect('posts:post_detail', post_id=post_id)
     if request.method != 'POST':
         form = PostForm(
             files=request.FILES or None,
@@ -141,7 +141,7 @@ def post_edit(request: HttpRequest, post_id: int) -> HttpResponse:
     post.group = form.cleaned_data['group']
     post.author = request.user
     post.save()
-    return redirect(f'/posts/{post_id}/')
+    return redirect('posts:post_detail', post_id=post_id)
 
 
 @login_required
@@ -149,6 +149,8 @@ def add_comment(request: HttpRequest, post_id: int) -> HttpResponse:
     """View-function that creates comments
      and redirects to post details' page.
      """
+    if request.method != 'POST':
+        return redirect('posts:post_detail', post_id=post_id)
     post = Post.objects.get(id=post_id)
     form = CommentForm(request.POST or None)
     if form.is_valid():
@@ -193,9 +195,7 @@ def profile_follow(request: HttpRequest, username: str) -> HttpResponse:
             user=request.user,
             author=author
         )
-        return redirect('posts:profile', username=username)
-    else:
-        return redirect('posts:profile', username=username)
+    return redirect('posts:profile', username=username)
 
 
 @login_required
@@ -209,6 +209,4 @@ def profile_unfollow(request: HttpRequest, username: str) -> HttpResponse:
     if following_existing:
         following = Follow.objects.get(user=request.user, author=author)
         following.delete()
-        return redirect('posts:profile', username=username)
-    else:
-        return redirect('posts:profile', username=username)
+    return redirect('posts:profile', username=username)
