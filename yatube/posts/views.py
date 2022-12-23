@@ -210,3 +210,17 @@ def profile_unfollow(request: HttpRequest, username: str) -> HttpResponse:
         following = Follow.objects.get(user=request.user, author=author)
         following.delete()
     return redirect('posts:profile', username=username)
+
+
+@login_required
+def delete_post(request: HttpRequest, post_id: int) -> HttpResponse:
+    """View-function that deletes post."""
+    post = Post.objects.get(pk=post_id)
+    if request.user == post.author:
+        post.delete()
+    return redirect('posts:delete_success')
+
+
+def delete_success(request):
+    template = 'posts/post_deleted.html'
+    return render(request, template)

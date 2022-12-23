@@ -25,4 +25,6 @@ urlpatterns = [
         views.profile_unfollow,
         name='profile_unfollow'
     ),
+    path('posts/<int:post_id>/delete/', views.delete_post, name='post_delete'),
+    path('posts/deleted/', views.delete_success, name='delete_success')
 ]

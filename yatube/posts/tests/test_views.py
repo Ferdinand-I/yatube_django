@@ -74,10 +74,10 @@ class TestPostPages(TestCase):
     def setUp(self) -> None:
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
+        cache.clear()
 
     def test_pages_use_correct_templates(self):
         """Test pages use correct templates."""
-        cache.clear()
         templates_pages_names = {
             'posts/index.html': reverse('posts:index'),
             'posts/group_list.html': reverse(
@@ -105,7 +105,6 @@ class TestPostPages(TestCase):
 
     def test_home_page_show_correct_context(self):
         """Test index page context."""
-        cache.clear()
         context_dict = {
             'title': 'Последние обновления на сайте',
             'description': 'Последние обновления на сайте'
@@ -117,7 +116,6 @@ class TestPostPages(TestCase):
 
     def test_first_page_contains_ten_posts(self):
         """Test paginator on pages where needed with settings page count."""
-        cache.clear()
         pages_with_paginators = {
             'index': reverse('posts:index'),
             'group-list': reverse(
@@ -139,7 +137,6 @@ class TestPostPages(TestCase):
 
     def test_group_posts_correct_context(self):
         """Test group post page has correct context."""
-        cache.clear()
         response = self.authorized_client.get(
             reverse('posts:group-list', kwargs={'slug': self.group.slug})
         )
@@ -149,7 +146,6 @@ class TestPostPages(TestCase):
 
     def test_profile_posts_correct_context(self):
         """Test profile page got correct context."""
-        cache.clear()
         response = self.authorized_client.get(
             reverse('posts:profile', kwargs={'username': 'Test_User'})
         )
@@ -164,7 +160,6 @@ class TestPostPages(TestCase):
 
     def test_post_detail_correct_context(self):
         """Post detail teplate is formed with correct context."""
-        cache.clear()
         response = self.authorized_client.get(
             reverse(
                 'posts:post_detail',
@@ -213,7 +208,6 @@ class TestPostPages(TestCase):
 
     def test_new_post_appears_on_right_pages(self):
         """Test new post appears on top of correct pages."""
-        cache.clear()
         post_created = Post.objects.create(
             text='Тестовый текст 1',
             author=self.user,
@@ -251,7 +245,6 @@ class TestPostPages(TestCase):
 
     def test_image_appears_in_context(self):
         """Test that context has an image."""
-        cache.clear()
         pages = (
             reverse('posts:index'),
             reverse(
@@ -282,7 +275,6 @@ class TestPostPages(TestCase):
 
     def test_cache_index(self):
         """Test content is delivered from cache."""
-        cache.clear()
         new_post = Post.objects.create(
             text='delete',
             author=self.user

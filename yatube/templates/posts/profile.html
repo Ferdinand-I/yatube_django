@@ -48,6 +48,11 @@
           <a class="btn btn-outline-dark" href="{% url 'posts:profile' post.author.username %}">
             все посты пользователя
           </a>
+          {% if request.user == post.author %}
+          <a class="btn btn-outline-dark" href="{% url 'posts:post_delete' post.id %}">
+            удалить запись
+          </a>
+        {% endif %}
         </article>
         {% if not forloop.last %}
           <hr>
